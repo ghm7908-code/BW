@@ -1,0 +1,33 @@
+Job ID: 8089
+Node: geog-hpc-compute1
+Project dir: /geogfs1/home/u3666068/BuildingWorld
+Processed root: /geogfs1/groups/hkurs/u3666068mgh/Tallin/bwformer_trainval_256
+Train list: /geogfs1/groups/hkurs/u3666068mgh/Tallin/bwformer_trainval_256/train_list.txt
+Validation list: /geogfs1/groups/hkurs/u3666068mgh/Tallin/bwformer_trainval_256/valid_list.txt
+Output dir: /geogfs1/groups/hkurs/u3666068mgh/Tallin/checkpoints/tallin_roof_prior_scratch
+TensorBoard root: /geogfs1/groups/hkurs/u3666068mgh/Tallin/tensorboard/tallin_roof_prior_scratch
+Run validation: 1
+Validation interval: 10
+Max train samples: 0
+Max validation samples: 0
+Sample seed: 42
+Resume checkpoint: /geogfs1/groups/hkurs/u3666068mgh/Tallin/checkpoints/tallin_roof_prior_scratch/checkpoint.pth
+torch 2.1.0+cu121
+cuda 12.1
+cuda_available True
+gpu_count 1
+Active Conda Env: BWformer
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           1.2T  570M  1.2T   1% /dev/shm
+
+[train-only] Start training
+Resume from ckpt file /geogfs1/groups/hkurs/u3666068mgh/Tallin/checkpoints/tallin_roof_prior_scratch/checkpoint.pth, starting from epoch 54
+number of trainable backbone params: 23546752
+number of trainable corner params: 9474050
+number of trainable corner3d params: 15099576
+number of trainable edge params: 13969160
+number of trainable roof prior params: 1901441
+number of all trainable params: 63990979
+Start training
+Backbone is trainable at epoch 55
+Epoch: [55]  [   0/3444]  eta: 12:13:44  lr: 0.000200  loss: 247.375 (247.375)  loss_e_s1: 28.894 (28.894)  loss_e_s2_hb: 27.518 (27.518)  loss_e_s2_rel: 27.894 (27.894)  edge_acc_s1: 0.600 (0.600)  edge_acc_s2_hb: 0.266 (0.266)  edge_acc_s2_rel: 0.270 (0.270)  loss_3dcenter: 0.007 (0.007)  loss_labels: 0.000 (0.000)  loss_cardinality: 3.125 (3.125)  loss_height: 0.007 (0.007)  loss_x: 0.010 (0.010)  loss_y: 0.011 (0.011)  loss_c_s1: 2772.773 (2772.773)  corner_recall: 0.362 (0.362)  loss_roof_prior: 1.020 (1.020)  time: 12.7829  data: 1.3596  max mem: 27104

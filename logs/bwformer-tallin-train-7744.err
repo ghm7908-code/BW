@@ -1,0 +1,51 @@
+/usr/bin/id: cannot find name for group ID 2020
+/usr/bin/id: cannot find name for user ID 2031
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+/geogfs1/home/u3666068/BuildingWorld/train.py:658: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:261.)
+  return torch.tensor(all_results).to(c_outputs.device)
+Traceback (most recent call last):
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 837, in <module>
+    main()
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 560, in main
+    train_stats = train_one_epoch(
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 155, in train_one_epoch
+    for data in metric_logger.log_every(data_loader, print_freq, header):
+  File "/geogfs1/home/u3666068/BuildingWorld/utils/misc.py", line 138, in log_every
+    for obj in iterable:
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 630, in __next__
+    data = self._next_data()
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1345, in _next_data
+    return self._process_data(data)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 1371, in _process_data
+    data.reraise()
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/_utils.py", line 694, in reraise
+    raise exception
+RuntimeError: Caught RuntimeError in DataLoader worker process 6.
+Original Traceback (most recent call last):
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/fetch.py", line 54, in fetch
+    return self.collate_fn(data)
+  File "/geogfs1/home/u3666068/BuildingWorld/datasets/data_utils.py", line 35, in collate_fn
+    batch_values = default_collate([d[field] for d in data])
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/collate.py", line 265, in default_collate
+    return collate(batch, collate_fn_map=default_collate_fn_map)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/collate.py", line 119, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/collate.py", line 171, in collate_numpy_array_fn
+    return collate([torch.as_tensor(b) for b in batch], collate_fn_map=collate_fn_map)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/collate.py", line 119, in collate
+    return collate_fn_map[elem_type](batch, collate_fn_map=collate_fn_map)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/utils/data/_utils/collate.py", line 160, in collate_tensor_fn
+    storage = elem._typed_storage()._new_shared(numel, device=elem.device)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/storage.py", line 866, in _new_shared
+    untyped_storage = torch.UntypedStorage._new_shared(size * self._element_size(), device=device)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/storage.py", line 262, in _new_shared
+    return cls._new_using_fd_cpu(size)
+RuntimeError: unable to write to file </torch_4109535_550786492_2625>: No space left on device (28)
+

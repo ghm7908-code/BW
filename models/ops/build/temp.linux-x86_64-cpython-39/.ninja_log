@@ -1,0 +1,7 @@
+# ninja log v7
+6	14354	1772435738452575824	/geogfs1/home/u3666068/BWformer-main/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BWformer-main/models/ops/src/cpu/ms_deform_attn_cpu.o	c4453127924116c3
+9	26214	1772435738455876911	/geogfs1/home/u3666068/BWformer-main/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BWformer-main/models/ops/src/vision.o	2e18315521f2b370
+8	30425	1772435738454678064	/geogfs1/home/u3666068/BWformer-main/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BWformer-main/models/ops/src/cuda/ms_deform_attn_cuda.o	45ce015c42cd27ea
+71	13450	1775630596718849750	/geogfs1/home/u3666068/BuildingWorld/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BuildingWorld/models/ops/src/cpu/ms_deform_attn_cpu.o	3bdbaa5c4e132a9f
+74	24479	1775630596721675120	/geogfs1/home/u3666068/BuildingWorld/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BuildingWorld/models/ops/src/vision.o	e0aed0e39b2c2028
+73	32779	1775630596720668270	/geogfs1/home/u3666068/BuildingWorld/models/ops/build/temp.linux-x86_64-cpython-39/geogfs1/home/u3666068/BuildingWorld/models/ops/src/cuda/ms_deform_attn_cuda.o	a0e9dcc4893c101e

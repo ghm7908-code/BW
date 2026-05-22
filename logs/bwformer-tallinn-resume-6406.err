@@ -1,0 +1,28 @@
+/usr/bin/id: cannot find name for group ID 2020
+/usr/bin/id: cannot find name for user ID 2031
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+/geogfs1/home/u3666068/BuildingWorld/train.py:572: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:261.)
+  return torch.tensor(all_results).to(c_outputs.device)
+Traceback (most recent call last):
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 751, in <module>
+    main()
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 480, in main
+    train_stats = train_one_epoch(
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 143, in train_one_epoch
+    s2_losses_rel, s1_acc, s2_acc_hb, s2_acc_rel = run_model(
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 240, in run_model
+    s1_losses, s1_acc, s2_losses_hb, s2_acc_hb, s2_losses_rel, s2_acc_rel = edge_criterion(logits_s1, logits_s2_hb,
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/BuildingWorld/models/loss.py", line 156, in forward
+    s2_acc_hybrid = edge_acc(logits_s2_hybrid, s2_labels, s2_edge_lengths, s2_gt_values)
+  File "/geogfs1/home/u3666068/BuildingWorld/utils/geometry_utils.py", line 41, in edge_acc
+    avg_acc = all_acc[0]
+IndexError: list index out of range

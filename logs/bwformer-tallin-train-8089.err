@@ -1,0 +1,54 @@
+/usr/bin/id: cannot find name for group ID 2020
+/usr/bin/id: cannot find name for user ID 2031
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+/geogfs1/home/u3666068/BuildingWorld/train.py:658: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:261.)
+  return torch.tensor(all_results).to(c_outputs.device)
+Traceback (most recent call last):
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 837, in <module>
+    main()
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 560, in main
+    train_stats = train_one_epoch(
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 158, in train_one_epoch
+    s2_losses_rel, s1_acc, s2_acc_hb, s2_acc_rel = run_model(
+  File "/geogfs1/home/u3666068/BuildingWorld/train.py", line 267, in run_model
+    logits_s1, logits_s2_hb, logits_s2_rel, s2_ids, s2_edge_mask, s2_gt_values = edge_model(image_feats, feat_mask,
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/BuildingWorld/models/edge_models.py", line 137, in forward
+    logits_per_edge, logits_hb, logits_rel, selection_ids, s2_attn_mask, s2_gt_values = self.transformer(srcs,
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/BuildingWorld/models/edge_models.py", line 283, in forward
+    hs_rel, _ = self.relational_decoder(rel_prim_hs_sample, interpolated_points,  memory,
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/BuildingWorld/models/deformable_transformer.py", line 204, in forward
+    output = layer(output, query_pos, reference_points_input, src, src_spatial_shapes, src_level_start_index,
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/BuildingWorld/models/deformable_transformer.py", line 164, in forward
+    self.self_attn(q.transpose(0, 1), k.transpose(0, 1), tgt.transpose(0, 1), key_padding_mask=key_padding_mask)[
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/modules/activation.py", line 1241, in forward
+    attn_output, attn_output_weights = F.multi_head_attention_forward(
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/functional.py", line 5408, in multi_head_attention_forward
+    attn_output_weights = dropout(attn_output_weights, p=dropout_p)
+  File "/geogfs1/home/u3666068/miniconda3/envs/BWformer/lib/python3.9/site-packages/torch/nn/functional.py", line 1266, in dropout
+    return _VF.dropout_(input, p, training) if inplace else _VF.dropout(input, p, training)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 944.00 MiB. GPU 0 has a total capacty of 79.18 GiB of which 188.00 MiB is free. Process 37022 has 43.36 GiB memory in use. Including non-PyTorch memory, this process has 35.63 GiB memory in use. Of the allocated memory 34.03 GiB is allocated by PyTorch, and 823.56 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
