@@ -8,3 +8,4 @@
   return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
 /geogfs1/home/u3666068/BuildingWorld/train.py:736: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:261.)
   return torch.tensor(all_results).to(c_outputs.device)
+slurmstepd: error: *** JOB 8538 ON geog-hpc-compute1 CANCELLED AT 2026-05-22T17:38:45 DUE TO TIME LIMIT ***
