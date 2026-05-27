@@ -105,31 +105,18 @@ def load_point_cloud(pc_file):
 
 
 def normalize_geometry(point_cloud, wf_vertices, image_size):
-    all_xyz = np.concatenate([point_cloud[:, :3], wf_vertices], axis=0)
+    cloud_xyz = point_cloud[:, :3]
+    centroid = np.mean(cloud_xyz, axis=0)
+    centered = cloud_xyz - centroid
+    max_distance = float(np.max(np.linalg.norm(centered, axis=1)))
 
-    xy_min = all_xyz[:, :2].min(axis=0)
-    xy_max = all_xyz[:, :2].max(axis=0)
-    z_min = float(all_xyz[:, 2].min())
-    z_max = float(all_xyz[:, 2].max())
-
-    xy_center = 0.5 * (xy_min + xy_max)
-    xy_extent = xy_max - xy_min
-    xy_extent_max = float(np.max(xy_extent))
-    if xy_extent_max <= 1e-8:
-        raise ValueError('point cloud footprint collapses to a single XY point')
-
-    z_extent = z_max - z_min
-    if z_extent <= 1e-8:
-        raise ValueError('point cloud height range collapses to a single value')
-
-    xy_scale = (image_size - 1) / xy_extent_max
-    z_scale = (image_size - 1) / z_extent
+    if max_distance <= 1e-8:
+        raise ValueError('point cloud collapses to a single point')
 
     def transform(points):
         transformed = np.empty_like(points, dtype=np.float64)
-        transformed[:, :2] = (points[:, :2] - xy_center) * xy_scale + (image_size - 1) / 2.0
-        transformed[:, 1] = (image_size - 1) - transformed[:, 1]
-        transformed[:, 2] = (points[:, 2] - z_min) * z_scale
+        transformed = (points - centroid) / max_distance
+        transformed = (transformed + 1.0) * 127.5
         transformed = np.clip(transformed, 0.0, image_size - 1.0)
         return transformed
 
