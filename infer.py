@@ -15,13 +15,14 @@ from models.corner_models_3d import HeatCorner3d
 from models.corner_to_edge import get_infer_edge_pairs
 from models.edge_models import HeatEdge
 from models.resnet import ResNetBackbone
+from models.roof_structure_prior import RoofStructurePrior
 
 
 def calculate_distance(point1, point2):
     return np.linalg.norm(point1 - point2)
 
 
-def load_model_state(model, state_dict):
+def load_model_state(model, state_dict, strict=True):
     model_state = model.state_dict()
     has_module_prefix = next(iter(state_dict)).startswith('module.') if state_dict else False
     needs_module_prefix = next(iter(model_state)).startswith('module.') if model_state else False
@@ -31,7 +32,7 @@ def load_model_state(model, state_dict):
     elif needs_module_prefix and not has_module_prefix:
         state_dict = {'module.' + k: v for k, v in state_dict.items()}
 
-    model.load_state_dict(state_dict)
+    model.load_state_dict(state_dict, strict=strict)
 
 
 def resolve_device(device_name):
@@ -137,9 +138,18 @@ def main(dataset, ckpt_path, image_size, infer_times, data_path, test_list, pc_r
     ).to(device)
 
     load_model_state(backbone, ckpt['backbone'])
-    load_model_state(corner_model, ckpt['corner_model'])
+    load_model_state(corner_model, ckpt['corner_model'], strict=False)
     load_model_state(corner_model3d, ckpt['corner_model3d'])
     load_model_state(edge_model, ckpt['edge_model'])
+
+    roof_prior_model = RoofStructurePrior(hidden_dim=128).to(device)
+    has_roof_prior = 'roof_prior_model' in ckpt
+    if has_roof_prior:
+        load_model_state(roof_prior_model, ckpt['roof_prior_model'])
+        roof_prior_model.eval()
+        print('Loaded roof prior model from checkpoint')
+    else:
+        print('Checkpoint has no roof_prior_model; running without roof feature fusion')
 
     backbone.eval()
     corner_model.eval()
@@ -178,6 +188,7 @@ def main(dataset, ckpt_path, image_size, infer_times, data_path, test_list, pc_r
                     infer_times,
                     corner_thresh=corner_thresh,
                     image_size=image_size,
+                    roof_prior_model=roof_prior_model if has_roof_prior else None,
                 )
 
             if len(pred_corners) > 0:
@@ -203,10 +214,15 @@ def main(dataset, ckpt_path, image_size, infer_times, data_path, test_list, pc_r
 
 
 def get_results(image, backbone, corner_model, corner_model3d, edge_model, pixels, pixel_features,
-                args, infer_times, corner_thresh=0.5, image_size=256):
+                args, infer_times, corner_thresh=0.5, image_size=256, roof_prior_model=None):
     image_feats, feat_mask, all_image_feats = backbone(image)
     pixel_features = pixel_features.unsqueeze(0).repeat(image.shape[0], 1, 1, 1)
-    preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats)
+
+    roof_features = None
+    if roof_prior_model is not None:
+        _, roof_features = roof_prior_model(all_image_feats)
+
+    preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats, roof_features)
     c_outputs = preds_s1
     maxnum = getattr(args, 'max_corner_num', 150)
 

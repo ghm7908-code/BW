@@ -75,7 +75,7 @@ class HeatCorner(nn.Module):
         ref = torch.stack((ref_x, ref_y), -1)
         return ref
 
-    def forward(self, image_feats, feat_mask, pixels_feat, pixels, all_image_feats):
+    def forward(self, image_feats, feat_mask, pixels_feat, pixels, all_image_feats, roof_features=None):
         features = self.get_ms_feat(image_feats, feat_mask)
 
         srcs = []
@@ -115,7 +115,7 @@ class HeatCorner(nn.Module):
         H_tgt = W_tgt = int(np.sqrt(sp_inputs.shape[1]))
         reference_points_s1 = self.get_decoder_reference_points(H_tgt, W_tgt, sp_inputs.device)
 
-        corner_logits = self.transformer(srcs, masks, all_pos, sp_inputs, reference_points_s1, all_image_feats)
+        corner_logits = self.transformer(srcs, masks, all_pos, sp_inputs, reference_points_s1, all_image_feats, roof_features)
         return corner_logits
 
 
@@ -179,6 +179,8 @@ class CornerTransformer(nn.Module):
         self.output_fc_1 = nn.Linear(d_model, 1)
         self.output_fc_2 = nn.Linear(d_model, 1)
 
+        self.roof_fusion = nn.Conv2d(128, 128, kernel_size=1)
+
         self._reset_parameters()
 
     def _reset_parameters(self):
@@ -199,7 +201,7 @@ class CornerTransformer(nn.Module):
         valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
         return valid_ratio
 
-    def forward(self, srcs, masks, pos_embeds, query_embed, reference_points, all_image_feats):
+    def forward(self, srcs, masks, pos_embeds, query_embed, reference_points, all_image_feats, roof_features=None):
         src_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []
@@ -232,11 +234,11 @@ class CornerTransformer(nn.Module):
                                                  spatial_shapes, level_start_index, valid_ratios, query_embed,
                                                  mask_flatten)
 
-        feats_s1, preds_s1 = self.generate_corner_preds(hs_pixels_s1, all_image_feats)
+        feats_s1, preds_s1 = self.generate_corner_preds(hs_pixels_s1, all_image_feats, roof_features)
 
         return preds_s1
 
-    def generate_corner_preds(self, outputs, conv_outputs):
+    def generate_corner_preds(self, outputs, conv_outputs, roof_features=None):
         B, L, C = outputs.shape
         side = int(np.sqrt(L))
         outputs = outputs.view(B, side, side, C)
@@ -249,6 +251,11 @@ class CornerTransformer(nn.Module):
         x = self.conv_up0(x)
 
         x = self.upsample(x)
+        if roof_features is not None:
+            roof_proj = self.roof_fusion(roof_features)
+            if roof_proj.shape[-2:] != x.shape[-2:]:
+                roof_proj = F.interpolate(roof_proj, size=x.shape[-2:], mode='bilinear', align_corners=True)
+            x = x + roof_proj
         x = torch.cat([x, conv_outputs['x_original']], dim=1)
         x = self.conv_original_size2(x)
 

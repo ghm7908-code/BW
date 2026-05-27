@@ -27,7 +27,9 @@ class RoofStructurePrior(nn.Module):
         x = self.upsample(x)
         x = self.conv_original(self._concat(x, conv_outputs['x_original']))
 
-        return self.output(x).squeeze(1)
+        roof_features = x
+        pred = self.output(x).squeeze(1)
+        return pred, roof_features
 
     @staticmethod
     def _concat(x, skip):

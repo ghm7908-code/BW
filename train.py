@@ -54,7 +54,7 @@ def unwrap_model(model):
     return model.module if hasattr(model, 'module') else model
 
 
-def load_model_state(model, state_dict):
+def load_model_state(model, state_dict, strict=True):
     model_state = unwrap_model(model).state_dict()
     has_module_prefix = next(iter(state_dict)).startswith('module.') if state_dict else False
     needs_module_prefix = next(iter(model_state)).startswith('module.') if model_state else False
@@ -64,7 +64,7 @@ def load_model_state(model, state_dict):
     elif needs_module_prefix and not has_module_prefix:
         state_dict = {'module.' + k: v for k, v in state_dict.items()}
 
-    unwrap_model(model).load_state_dict(state_dict)
+    unwrap_model(model).load_state_dict(state_dict, strict=strict)
 
 
 def load_checkpoint_payload(path):
@@ -280,10 +280,10 @@ def run_model(data, pixels, pixel_features, backbone, corner_model, corner_model
     else:
         image_feats, feat_mask, all_image_feats = backbone(image)
 
-    roof_prior_preds = roof_prior_model(all_image_feats)
+    roof_prior_preds, roof_features = roof_prior_model(all_image_feats)
     roof_loss = roof_criterion(roof_prior_preds, roof_line_labels)
 
-    preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats)
+    preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats, roof_features)
     preds_s1 = torch.nan_to_num(preds_s1, nan=0.0, posinf=1.0, neginf=0.0).clamp(0.0, 1.0)
 
     corner_loss_s1, corner_recall = corner_criterion(preds_s1, pixel_labels, gauss_labels, epoch)
@@ -548,7 +548,7 @@ def main():
     if args.resume:
         ckpt = load_checkpoint_payload(args.resume)
         load_model_state(backbone, ckpt['backbone'])
-        load_model_state(corner_model, ckpt['corner_model'])
+        load_model_state(corner_model, ckpt['corner_model'], strict=False)
         load_model_state(corner_model3d, ckpt['corner_model3d'])
         load_model_state(edge_model, ckpt['edge_model'])
         if 'roof_prior_model' in ckpt:
@@ -568,7 +568,7 @@ def main():
     elif args.load_weights:
         ckpt = load_checkpoint_payload(args.load_weights)
         load_model_state(backbone, ckpt['backbone'])
-        load_model_state(corner_model, ckpt['corner_model'])
+        load_model_state(corner_model, ckpt['corner_model'], strict=False)
         load_model_state(corner_model3d, ckpt['corner_model3d'])
         load_model_state(edge_model, ckpt['edge_model'])
         if 'roof_prior_model' in ckpt:
