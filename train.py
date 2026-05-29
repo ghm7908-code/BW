@@ -67,6 +67,33 @@ def load_model_state(model, state_dict, strict=True):
     unwrap_model(model).load_state_dict(state_dict, strict=strict)
 
 
+def load_optimizer_state(optimizer, checkpoint_state):
+    """Load optimizer state with tolerance for added/removed parameters."""
+    current_state = optimizer.state_dict()
+    old_param_groups = checkpoint_state['param_groups']
+    new_param_groups = current_state['param_groups']
+
+    for g_idx, (old_g, new_g) in enumerate(zip(old_param_groups, new_param_groups)):
+        for key in ['lr', 'betas', 'eps', 'weight_decay', 'amsgrad', 'maximize']:
+            if key in old_g:
+                new_g[key] = old_g[key]
+
+    old_state = checkpoint_state['state']
+    new_state = current_state['state']
+
+    for g_idx, (old_g, new_g) in enumerate(zip(old_param_groups, new_param_groups)):
+        old_ids = old_g['params']
+        new_ids = new_g['params']
+        for o_idx, old_id in enumerate(old_ids):
+            if o_idx < len(new_ids) and old_id in old_state:
+                new_state[new_ids[o_idx]] = old_state[old_id]
+
+    optimizer.load_state_dict(current_state)
+    total_new = sum(len(g['params']) for g in new_param_groups) - sum(len(g['params']) for g in old_param_groups)
+    if total_new > 0:
+        print(f'Optimizer: {total_new} new parameter(s) start with fresh momentum')
+
+
 def load_checkpoint_payload(path):
     return torch.load(path, map_location='cpu')
 
@@ -561,7 +588,7 @@ def main():
         else:
             print('Checkpoint has no roof_prior_model; initialize the new roof prior head from scratch.')
         try:
-            optimizer.load_state_dict(ckpt['optimizer'])
+            load_optimizer_state(optimizer, ckpt['optimizer'])
             if 'lr_scheduler' in ckpt:
                 lr_scheduler.load_state_dict(ckpt['lr_scheduler'])
                 scheduler_restored = True
