@@ -183,6 +183,9 @@ class CornerTransformer(nn.Module):
 
         self._reset_parameters()
 
+        nn.init.normal_(self.roof_fusion.weight, std=1e-4)
+        nn.init.zeros_(self.roof_fusion.bias)
+
     def _reset_parameters(self):
         for p in self.parameters():
             if p.dim() > 1:
