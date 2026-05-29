@@ -283,6 +283,11 @@ def run_model(data, pixels, pixel_features, backbone, corner_model, corner_model
     roof_prior_preds, roof_features = roof_prior_model(all_image_feats)
     roof_loss = roof_criterion(roof_prior_preds, roof_line_labels)
 
+    if not hasattr(run_model, '_roof_verified'):
+        print(f'[roof fusion] roof_features shape: {roof_features.shape}, '
+              f'mean={roof_features.mean().item():.4f}, std={roof_features.std().item():.4f}')
+        run_model._roof_verified = True
+
     preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats, roof_features)
     preds_s1 = torch.nan_to_num(preds_s1, nan=0.0, posinf=1.0, neginf=0.0).clamp(0.0, 1.0)
 
