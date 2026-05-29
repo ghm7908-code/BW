@@ -84,14 +84,25 @@ def load_optimizer_state(optimizer, checkpoint_state):
     for g_idx, (old_g, new_g) in enumerate(zip(old_param_groups, new_param_groups)):
         old_ids = old_g['params']
         new_ids = new_g['params']
-        for o_idx, old_id in enumerate(old_ids):
-            if o_idx < len(new_ids) and old_id in old_state:
-                new_state[new_ids[o_idx]] = old_state[old_id]
+
+        # Build a map: old param shape → new param id (for params not yet matched)
+        new_shape_to_ids = {}
+        for new_id in new_ids:
+            if new_id in new_state:
+                new_shape_to_ids.setdefault(new_state[new_id]['exp_avg'].shape, []).append(new_id)
+
+        for old_id in old_ids:
+            if old_id not in old_state:
+                continue
+            old_shape = old_state[old_id]['exp_avg'].shape
+            if old_shape in new_shape_to_ids and new_shape_to_ids[old_shape]:
+                new_id = new_shape_to_ids[old_shape].pop(0)
+                new_state[new_id] = old_state[old_id]
 
     optimizer.load_state_dict(current_state)
-    total_new = sum(len(g['params']) for g in new_param_groups) - sum(len(g['params']) for g in old_param_groups)
-    if total_new > 0:
-        print(f'Optimizer: {total_new} new parameter(s) start with fresh momentum')
+    restored = sum(1 for v in new_state.values() if v.get('exp_avg') is not None and v['exp_avg'].abs().sum() > 0)
+    total = len(new_state)
+    print(f'Optimizer: restored momentum for {restored}/{total} parameters')
 
 
 def load_checkpoint_payload(path):
