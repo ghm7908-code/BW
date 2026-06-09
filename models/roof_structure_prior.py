@@ -15,6 +15,7 @@ class RoofStructurePrior(nn.Module):
         self.conv_up0 = convrelu(256 + 64, hidden_dim, 3, 1)
         self.conv_original = convrelu(hidden_dim + 64, hidden_dim, 3, 1)
         self.output = nn.Conv2d(hidden_dim, 1, kernel_size=1)
+        self.corner_head = nn.Conv2d(hidden_dim, 1, kernel_size=1)
 
     def forward(self, conv_outputs):
         x = self.proj_layer2(conv_outputs['layer2'])
@@ -29,7 +30,8 @@ class RoofStructurePrior(nn.Module):
 
         roof_features = x
         pred = self.output(x).squeeze(1)
-        return pred, roof_features
+        corner_pred = self.corner_head(x).squeeze(1)
+        return pred, roof_features, corner_pred
 
     @staticmethod
     def _concat(x, skip):

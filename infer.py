@@ -220,7 +220,7 @@ def get_results(image, backbone, corner_model, corner_model3d, edge_model, pixel
 
     roof_features = None
     if roof_prior_model is not None:
-        _, roof_features = roof_prior_model(all_image_feats)
+        _, roof_features, _ = roof_prior_model(all_image_feats)
 
     preds_s1 = corner_model(image_feats, feat_mask, pixel_features, pixels, all_image_feats, roof_features)
     c_outputs = preds_s1

@@ -49,6 +49,8 @@ def get_args_parser():
                         help='the max number of corners allowed in the experiments')
     parser.add_argument('--lambda_roof', default=0.15, type=float,
                         help='weight for the roof structure prior auxiliary loss; set 0 to disable its effect')
+    parser.add_argument('--lambda_roof_corner', default=0.1, type=float,
+                        help='weight for the roof prior corner prediction head')
     parser.add_argument('--freeze_backbone_epochs', default=0, type=int,
                         help='freeze backbone parameters for the first N epochs during finetuning')
     parser.add_argument('--save_every', default=20, type=int,

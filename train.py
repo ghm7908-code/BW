@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.distributed as dist
 import os
 import time
@@ -243,7 +244,7 @@ def train_one_epoch(image_size, backbone,corner_model, corner_model3d,edge_model
 
     for data in metric_logger.log_every(data_loader, print_freq, header):
         
-        loss_3dcenter, loss_labels, loss_cardinality,loss_height, loss_x, loss_y, roof_loss, corner_outputs, corner_loss, corner_recall,  logits_s1, logits_s2_hb, logits_s2_rel, s1_losses, s2_losses_hb, \
+        loss_3dcenter, loss_labels, loss_cardinality,loss_height, loss_x, loss_y, roof_loss, roof_corner_loss, corner_outputs, corner_loss, corner_recall,  logits_s1, logits_s2_hb, logits_s2_rel, s1_losses, s2_losses_hb, \
         s2_losses_rel, s1_acc, s2_acc_hb, s2_acc_rel = run_model(
             data,
             pixels,
@@ -262,11 +263,11 @@ def train_one_epoch(image_size, backbone,corner_model, corner_model3d,edge_model
             args,
             freeze_backbone=freeze_backbone)
 
-        loss = s1_losses + s2_losses_hb + s2_losses_rel + ( 2000 * loss_3dcenter + 100000 * loss_labels)  + corner_loss * args.lambda_corner + roof_loss * args.lambda_roof
+        loss = s1_losses + s2_losses_hb + s2_losses_rel + ( 2000 * loss_3dcenter + 100000 * loss_labels)  + corner_loss * args.lambda_corner + roof_loss * args.lambda_roof + roof_corner_loss * args.lambda_roof_corner
 
         loss_dict = {'loss_e_s1': s1_losses, 'loss_e_s2_hb': s2_losses_hb, 'loss_e_s2_rel': s2_losses_rel,
                     'edge_acc_s1': s1_acc, 'edge_acc_s2_hb': s2_acc_hb, 'edge_acc_s2_rel': s2_acc_rel,
-                    'loss_3dcenter': loss_3dcenter, 'loss_labels': loss_labels, 'loss_cardinality': loss_cardinality, 'loss_height':loss_height, 'loss_x':loss_x, 'loss_y':loss_y,'loss_c_s1': corner_loss, 'corner_recall': corner_recall, 'loss_roof_prior': roof_loss}
+                    'loss_3dcenter': loss_3dcenter, 'loss_labels': loss_labels, 'loss_cardinality': loss_cardinality, 'loss_height':loss_height, 'loss_x':loss_x, 'loss_y':loss_y,'loss_c_s1': corner_loss, 'corner_recall': corner_recall, 'loss_roof_prior': roof_loss, 'loss_roof_corner': roof_corner_loss}
         if not torch.isfinite(loss):
             debug_terms = {
                 k: float(v.detach().cpu()) if torch.is_tensor(v) and v.numel() == 1 else str(v)
@@ -318,8 +319,9 @@ def run_model(data, pixels, pixel_features, backbone, corner_model, corner_model
     else:
         image_feats, feat_mask, all_image_feats = backbone(image)
 
-    roof_prior_preds, roof_features = roof_prior_model(all_image_feats)
+    roof_prior_preds, roof_features, roof_corner_preds = roof_prior_model(all_image_feats)
     roof_loss = roof_criterion(roof_prior_preds, roof_line_labels)
+    roof_corner_loss = F.binary_cross_entropy_with_logits(roof_corner_preds, gauss_labels)
 
     if not hasattr(run_model, '_roof_verified'):
         print(f'[roof fusion] roof_features shape: {roof_features.shape}, '
@@ -371,7 +373,7 @@ def run_model(data, pixels, pixel_features, backbone, corner_model, corner_model
                                                                                            edge_labels, edge_lengths,
                                                                                            edge_mask, s2_gt_values)
 
-    return  loss_3dcenter, loss_labels, loss_cardinality,loss_height,loss_x, loss_y, roof_loss, c_outputs, corner_loss_s1, corner_recall,logits_s1, logits_s2_hb, logits_s2_rel, s1_losses, s2_losses_hb, \
+    return  loss_3dcenter, loss_labels, loss_cardinality,loss_height,loss_x, loss_y, roof_loss, roof_corner_loss, c_outputs, corner_loss_s1, corner_recall,logits_s1, logits_s2_hb, logits_s2_rel, s1_losses, s2_losses_hb, \
             s2_losses_rel, s1_acc, s2_acc_hb, s2_acc_rel
 
 
@@ -394,7 +396,7 @@ def evaluate(image_size, backbone, corner_model, corner_model3d, edge_model, roo
     pixel_features = pixel_features.to(device)
 
     for data in metric_logger.log_every(data_loader, 10, header):
-        loss_3dcenter, loss_labels, loss_cardinality, loss_height, loss_x, loss_y, roof_loss, _, _, _, logits_s1, logits_s2_hb, \
+        loss_3dcenter, loss_labels, loss_cardinality, loss_height, loss_x, loss_y, roof_loss, roof_corner_loss, _, _, _, logits_s1, logits_s2_hb, \
         logits_s2_rel, s1_losses, s2_losses_hb, s2_losses_rel, s1_acc, s2_acc_hb, s2_acc_rel = run_model(
             data,
             pixels,
@@ -424,7 +426,8 @@ def evaluate(image_size, backbone, corner_model, corner_model3d, edge_model, roo
                      'loss_height': loss_height,
                      'loss_x':loss_x,
                      'loss_y':loss_y,
-                     'loss_roof_prior': roof_loss}
+                     'loss_roof_prior': roof_loss,
+                     'loss_roof_corner': roof_corner_loss}
 
         loss = s1_losses + s2_losses_hb + s2_losses_rel + ( 200 * loss_3dcenter + 100000 * loss_labels) + roof_loss * args.lambda_roof
         loss_value = loss.item()
