@@ -179,12 +179,15 @@ class CornerTransformer(nn.Module):
         self.output_fc_1 = nn.Linear(d_model, 1)
         self.output_fc_2 = nn.Linear(d_model, 1)
 
-        self.roof_fusion = nn.Conv2d(128, 128, kernel_size=1)
+        self.roof_proj_l1 = nn.Conv2d(128, 256, kernel_size=1)
+        self.roof_proj_l0 = nn.Conv2d(128, 128, kernel_size=1)
+        self.roof_proj_orig = nn.Conv2d(128, 128, kernel_size=1)
 
         self._reset_parameters()
 
-        nn.init.normal_(self.roof_fusion.weight, std=1e-4)
-        nn.init.zeros_(self.roof_fusion.bias)
+        for m in [self.roof_proj_l1, self.roof_proj_l0, self.roof_proj_orig]:
+            nn.init.normal_(m.weight, std=1e-4)
+            nn.init.zeros_(m.bias)
 
     def _reset_parameters(self):
         for p in self.parameters():
@@ -249,18 +252,25 @@ class CornerTransformer(nn.Module):
         outputs = torch.cat([outputs, conv_outputs['layer1']], dim=1)
         x = self.conv_up1(outputs)
 
+        if roof_features is not None:
+            r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
+            x = x + self.roof_proj_l1(r)
+
         x = self.upsample(x)
         x = torch.cat([x, conv_outputs['layer0']], dim=1)
         x = self.conv_up0(x)
 
-        x = self.upsample(x)
         if roof_features is not None:
-            roof_proj = self.roof_fusion(roof_features)
-            if roof_proj.shape[-2:] != x.shape[-2:]:
-                roof_proj = F.interpolate(roof_proj, size=x.shape[-2:], mode='bilinear', align_corners=True)
-            x = x + roof_proj
+            r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
+            x = x + self.roof_proj_l0(r)
+
+        x = self.upsample(x)
         x = torch.cat([x, conv_outputs['x_original']], dim=1)
         x = self.conv_original_size2(x)
+
+        if roof_features is not None:
+            r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
+            x = x + self.roof_proj_orig(r)
 
         logits = x.permute(0, 2, 3, 1)
         preds = self.output_fc_1(logits)
