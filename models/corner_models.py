@@ -181,7 +181,7 @@ class CornerTransformer(nn.Module):
 
         self.roof_proj_l1 = nn.Conv2d(128, 256, kernel_size=1)
         self.roof_proj_l0 = nn.Conv2d(128, 128, kernel_size=1)
-        self.roof_proj_orig = nn.Conv2d(128, 128, kernel_size=1)
+        self.roof_proj_orig = nn.Conv2d(128, d_model, kernel_size=1)
 
         self._reset_parameters()
 
