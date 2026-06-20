@@ -365,7 +365,8 @@ def run_model(data, pixels, pixel_features, backbone, corner_model, corner_model
                                                                                             edge_coords, edge_mask,
                                                                                             edge_labels,
                                                                                             corner_nums,
-                                                                                            max_candidates)
+                                                                                            max_candidates,
+                                                                                            roof_features=roof_features)
 
     s1_losses, s1_acc, s2_losses_hb, s2_acc_hb, s2_losses_rel, s2_acc_rel = edge_criterion(logits_s1, logits_s2_hb,
                                                                                            logits_s2_rel, s2_ids,

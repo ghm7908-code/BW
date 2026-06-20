@@ -54,6 +54,18 @@ class HeatEdge(nn.Module):
         self.transformer = EdgeTransformer(d_model=hidden_dim, nhead=8, num_encoder_layers=1,
                                            num_decoder_layers=6, dim_feedforward=1024, dropout=0.1)
 
+        self.roof_to_edge = nn.Sequential(
+            nn.Linear(128, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+        )
+        self.roof_edge_gate = nn.Sequential(
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.Sigmoid(),
+        )
+        for m in [self.roof_to_edge[0], self.roof_edge_gate[0]]:
+            nn.init.normal_(m.weight, std=1e-4)
+            nn.init.zeros_(m.bias)
+
     @staticmethod
     def get_ms_feat(xs, img_mask):
         out: Dict[str, NestedTensor] = {}
@@ -65,7 +77,7 @@ class HeatEdge(nn.Module):
         return out
 
     def forward(self, image_feats, feat_mask, corner_outputs, edge_coords, edge_masks, gt_values, corner_nums,
-                max_candidates, do_inference=False):
+                max_candidates, do_inference=False, roof_features=None):
         
         features = self.get_ms_feat(image_feats, feat_mask)
 
@@ -133,6 +145,20 @@ class HeatEdge(nn.Module):
         edge_center = (edge_coords[:, :, 0, :2].float() + edge_coords[:, :, 1, :2].float()) / 2
         
         edge_center = edge_center / feat_mask.shape[1]
+
+        if roof_features is not None:
+            edge_center_grid = edge_center * 2 - 1
+            edge_center_grid = edge_center_grid.unsqueeze(2)
+            sampled_roof = F.grid_sample(
+                roof_features, edge_center_grid,
+                mode='bilinear', align_corners=True
+            )
+            sampled_roof = sampled_roof.squeeze(3).permute(0, 2, 1)
+            roof_edge_feat = self.roof_to_edge(sampled_roof)
+            gate = self.roof_edge_gate(
+                torch.cat([edge_inputs, roof_edge_feat], dim=-1)
+            )
+            edge_inputs = edge_inputs + gate * roof_edge_feat
 
         logits_per_edge, logits_hb, logits_rel, selection_ids, s2_attn_mask, s2_gt_values = self.transformer(srcs,
                                                                                                              masks,

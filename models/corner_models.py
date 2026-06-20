@@ -183,11 +183,19 @@ class CornerTransformer(nn.Module):
         self.roof_proj_l0 = nn.Conv2d(128, 128, kernel_size=1)
         self.roof_proj_orig = nn.Conv2d(128, d_model, kernel_size=1)
 
+        self.roof_gate_l1 = nn.Conv2d(256 + 128, 256, kernel_size=1)
+        self.roof_gate_l0 = nn.Conv2d(128 + 128, 128, kernel_size=1)
+        self.roof_gate_orig = nn.Conv2d(d_model + 128, d_model, kernel_size=1)
+
         self._reset_parameters()
 
         for m in [self.roof_proj_l1, self.roof_proj_l0, self.roof_proj_orig]:
             nn.init.normal_(m.weight, std=1e-4)
             nn.init.zeros_(m.bias)
+
+        for m in [self.roof_gate_l1, self.roof_gate_l0, self.roof_gate_orig]:
+            nn.init.constant_(m.bias, -2.0)
+            nn.init.normal_(m.weight, std=1e-4)
 
     def _reset_parameters(self):
         for p in self.parameters():
@@ -254,7 +262,8 @@ class CornerTransformer(nn.Module):
 
         if roof_features is not None:
             r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
-            x = x + self.roof_proj_l1(r)
+            gate = torch.sigmoid(self.roof_gate_l1(torch.cat([x, r], dim=1)))
+            x = x + gate * self.roof_proj_l1(r)
 
         x = self.upsample(x)
         x = torch.cat([x, conv_outputs['layer0']], dim=1)
@@ -262,7 +271,8 @@ class CornerTransformer(nn.Module):
 
         if roof_features is not None:
             r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
-            x = x + self.roof_proj_l0(r)
+            gate = torch.sigmoid(self.roof_gate_l0(torch.cat([x, r], dim=1)))
+            x = x + gate * self.roof_proj_l0(r)
 
         x = self.upsample(x)
         x = torch.cat([x, conv_outputs['x_original']], dim=1)
@@ -270,7 +280,8 @@ class CornerTransformer(nn.Module):
 
         if roof_features is not None:
             r = F.adaptive_avg_pool2d(roof_features, x.shape[-2:])
-            x = x + self.roof_proj_orig(r)
+            gate = torch.sigmoid(self.roof_gate_orig(torch.cat([x, r], dim=1)))
+            x = x + gate * self.roof_proj_orig(r)
 
         logits = x.permute(0, 2, 3, 1)
         preds = self.output_fc_1(logits)

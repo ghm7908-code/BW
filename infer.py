@@ -286,6 +286,7 @@ def get_results(image, backbone, corner_model, corner_model3d, edge_model, pixel
             corner_nums,
             max_candidates,
             True,
+            roof_features=roof_features,
         )
 
         num_total = s1_logits.shape[2]
