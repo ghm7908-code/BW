@@ -31,7 +31,7 @@ class HeatCorner3d(nn.Module):
         The corner model of HEAT is the edge model till the edge-filtering part. So only per-candidate prediction w/o
     relational modeling.
     """
-    def __init__(self, input_dim, hidden_dim, num_feature_levels, backbone_strides, backbone_num_channels, ):
+    def __init__(self, input_dim, hidden_dim, num_feature_levels, backbone_strides, backbone_num_channels, num_queries=300):
         super(HeatCorner3d, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -50,7 +50,7 @@ class HeatCorner3d(nn.Module):
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(num_classes) * bias_value
-        self.num_queries = 300
+        self.num_queries = num_queries
         
         self.query_embed = nn.Embedding(self.num_queries, 1)
         self.tgt_embed = nn.Embedding(self.num_queries, hidden_dim)

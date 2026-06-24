@@ -182,7 +182,7 @@ def get_edge_label_mix_gt(pred_corners,pred_logits, annot, max_corner_num):
         if len(nm_pred_ids) + len(all_corners) <= max_corner_num:
             all_corners = np.concatenate([all_corners, nm_pred_corners], axis=0)
         else:
-            all_corners = np.concatenate([all_corners, nm_pred_corners[:(max_corner_num - len(gt_corners)), :]], axis=0)
+            all_corners = np.concatenate([all_corners, nm_pred_corners[:(max_corner_num - len(all_corners)), :]], axis=0)
 
     processed_corners, edges, edge_ids, labels = _get_edges(all_corners, edge_pairs)
 

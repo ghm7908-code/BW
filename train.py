@@ -176,41 +176,29 @@ def optimizer_lr_values(optimizer):
 
 
 def pad_gt_corners(bs, annots, device):
-   
+
     corner_targets = []
-    # padding ground truth on-fly
     for i in range(bs):
         annot = annots[i]
         gt_corners = np.array(list(annot.keys()))
-        ind = np.lexsort(gt_corners.T)  
-        corners = gt_corners[ind]  
+        ind = np.lexsort(gt_corners.T)
+        corners = gt_corners[ind]
 
         corners = torch.from_numpy(corners).to(device=device, dtype=torch.float32)
-
-        corners = corners.reshape(-1,1).squeeze()
-      
+        corners = corners.reshape(-1, 1).squeeze()
         corners = torch.clip(corners, 0, 255) / 255
-        corners_pad = torch.zeros(len(corners), device=device)
-        corners_pad[:len(corners)] = corners
 
+        num_corners = len(corners) // 3
+        labels = torch.ones(num_corners, dtype=torch.float32, device=device)
 
-        center_dict = {}
-        corner_length = []
-        corner_length.append(len(corners)/3)
-        
-        labels = torch.ones(int(len(corners)/3), dtype=torch.float32, device=device)
-        labels_pad = torch.zeros(int(len(corners)/3), device=device)
-        labels_pad[:len(labels)] = labels
-        
-        
         center_dict = {
-            'coords': corners_pad.reshape(-1,3),
-            'labels': labels_pad.reshape(-1,1),
-            'length': torch.tensor(corner_length, device=device)
+            'coords': corners.reshape(-1, 3),
+            'labels': labels.reshape(-1, 1),
+            'length': torch.tensor([float(num_corners)], device=device),
         }
-        
+
         corner_targets.append(center_dict)
- 
+
     return corner_targets
 
 def train_one_epoch(image_size, backbone,corner_model, corner_model3d,edge_model, roof_prior_model, corner_criterion, corner_criterion3d, edge_criterion, roof_criterion, data_loader,
@@ -430,7 +418,7 @@ def evaluate(image_size, backbone, corner_model, corner_model3d, edge_model, roo
                      'loss_roof_prior': roof_loss,
                      'loss_roof_corner': roof_corner_loss}
 
-        loss = s1_losses + s2_losses_hb + s2_losses_rel + ( 200 * loss_3dcenter + 100000 * loss_labels) + roof_loss * args.lambda_roof
+        loss = s1_losses + s2_losses_hb + s2_losses_rel + ( 2000 * loss_3dcenter + 100000 * loss_labels) + roof_loss * args.lambda_roof
         loss_value = loss.item()
         metric_logger.update(loss=loss_value, **loss_dict)
 
@@ -516,6 +504,7 @@ def main():
         num_feature_levels=4,
         backbone_strides=strides,
         backbone_num_channels=num_channels,
+        num_queries=args.max_corner_num * 2,
     )
 
     corner_model = HeatCorner(
@@ -930,11 +919,12 @@ def get_edge_label_mix_gt_3dcorner(pred_corners,pred_logits, annot, max_corner_n
         nm_pred_corners = pred_corners[nm_pred_ids]
         if len(nm_pred_ids) + len(all_corners) <= max_corner_num:
             all_corners = np.concatenate([all_corners, nm_pred_corners], axis=0)
-            num_padding = max_corner_num - (len(nm_pred_ids) + len(all_corners))
+            num_padding = max_corner_num - len(all_corners)
 
-            additional_indices = np.random.choice(all_corners.shape[0], num_padding, replace=True)
-            additional_corners = all_corners[additional_indices]
-            all_corners = np.vstack((all_corners, additional_corners))
+            if num_padding > 0:
+                additional_indices = np.random.choice(all_corners.shape[0], num_padding, replace=True)
+                additional_corners = all_corners[additional_indices]
+                all_corners = np.vstack((all_corners, additional_corners))
 
         else:
             all_corners = np.concatenate([all_corners, nm_pred_corners[:(max_corner_num - len(gt_corners)), :]], axis=0)
