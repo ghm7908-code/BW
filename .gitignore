@@ -13,5 +13,6 @@ outputs/
 models/ops/build/
 models/ops/dist/
 models/ops/MultiScaleDeformableAttention.egg-info/
+logs/
 *.so
 *.egg
